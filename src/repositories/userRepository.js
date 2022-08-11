@@ -9,11 +9,12 @@ async function getTrendingHashtags() {
         group by h.id
         order by count(p.post_id) desc
         limit 10;
-    `)
-};
+    `);
+}
 
 async function getHashtagPosts(hashtag) {
-    return connection.query(`
+    return connection.query(
+        `
         select p.id, p.message, p.url, count(pl.post_id) as "likesCount",
             array(
                 select jsonb_build_object('id', h.id, 'name', h.name)
@@ -39,12 +40,28 @@ async function getHashtagPosts(hashtag) {
         where h.name=$1
         group by p.id
         order by p.id;
-    `, [hashtag]);
-};
+    `,
+        [hashtag]
+    );
+}
+
+async function getUserByEmail(email) {
+    return connection.query(`SELECT * FROM users WHERE email = $1`, [email]);
+}
+
+async function createUser(username, email, passwordHash, profile_img_url) {
+    return connection.query(
+        `INSERT INTO users (username, email, password, profile_img_url) 
+         VALUES ($1, $2, $3, $4)`,
+        [username, email, passwordHash, profile_img_url]
+    );
+}
 
 const userRepository = {
     getTrendingHashtags,
-    getHashtagPosts
+    getHashtagPosts,
+    getUserByEmail,
+    createUser,
 };
 
 export default userRepository;
