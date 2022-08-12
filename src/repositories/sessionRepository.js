@@ -1,4 +1,4 @@
-import connection from "../db.js";
+import connection from "../db/db.js";
 
 async function createSession(userId, token) {
     return connection.query(
