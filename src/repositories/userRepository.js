@@ -57,11 +57,16 @@ async function createUser(username, email, passwordHash, profile_img_url) {
     );
 }
 
+async function getUserById(id) {
+    return connection.query(`SELECT * FROM users WHERE id = $1;`, [id]);
+}
+
 const userRepository = {
     getTrendingHashtags,
     getHashtagPosts,
     getUserByEmail,
     createUser,
+    getUserById,
 };
 
 export default userRepository;

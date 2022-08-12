@@ -44,3 +44,16 @@ export async function singIn(req, res) {
         return res.sendStatus(500);
     }
 }
+
+export async function deleteSession(req, res) {
+    const { idSession } = res.locals;
+
+    try {
+        await sessionRepository.deleteSession(idSession);
+
+        return res.status(204).send("Sessão deletada.");
+    } catch (err) {
+        console.error(err);
+        return res.sendStatus(500);
+    }
+}
