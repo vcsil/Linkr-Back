@@ -2,10 +2,10 @@ import postsRepository from "../repositories/postsRepositories.js";
 
 
 export async function post(req, res){
-    const { userId, url, text } = req.body
+    const { user_id, url, text } = req.body
 
     try{
-        await postsRepository.createPosts(userId, url, text)
+        await postsRepository.createPosts(user_id, url, text)
         return res.sendStatus(201)
     } catch (error) {
         console.log(error);
