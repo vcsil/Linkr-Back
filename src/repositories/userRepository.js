@@ -1,4 +1,4 @@
-import connection from "../db.js";
+import connection from "../db/db.js";
 
 async function getTrendingHashtags() {
     return connection.query(`
@@ -7,6 +7,7 @@ async function getTrendingHashtags() {
         join posts_hashtags p
         on h.id=p.hashtag_id
         group by h.id
+        config_database
         order by count(p.post_id) desc
         limit 10;
     `);
