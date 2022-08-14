@@ -14,12 +14,12 @@ import userSignInSchema from "../schemas/signInSchema.js";
 const authRouter = Router();
 
 authRouter.post(
-    "/signup",
+    "/sign-up",
     validateSchema(userSignUpSchema),
     authEmailValidation,
     signUp
 );
-authRouter.post("/signin", validateSchema(userSignInSchema), singIn);
-authRouter.delete("/logoff", validateToken, deleteSession);
+authRouter.post("/sign-in", validateSchema(userSignInSchema), singIn);
+authRouter.delete("/log-off", validateToken, deleteSession);
 
 export default authRouter;
