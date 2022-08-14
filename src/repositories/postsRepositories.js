@@ -1,11 +1,27 @@
 import connection from "../db/db.js";
 
-async function createPosts(userId, url, text) {
-    return connection.query(
-        `INSERT INTO posts (userId, url, text) VALUES($1, $2, $3)`,
-        [userId, url, text]
-    );
+async function createPost(userId, url, text) {
+    connection.query(`
+        INSERT INTO posts (user_id, url, text) VALUES($1, $2, $3)
+    `, [userId, url, text]);
 }
+
+async function getUserLastPostId(userId) {
+    return connection.query(`
+        select id
+        from posts
+        where user_id=$1
+        order by created_at desc
+        limit 1;
+    `, userId);
+};
+
+async function createHashtag(hashtag) {
+    connection.query(`
+        insert into hashtags (name)
+        values ($1);
+    `, [hashtag]);
+};
 
 async function showPosts() {
     return connection.query(
@@ -17,7 +33,9 @@ async function showPosts() {
 }
 
 const postsRepository = {
-    createPosts,
+    createPost,
+    getUserLastPostId,
+    createHashtag,
     showPosts,
 };
 
