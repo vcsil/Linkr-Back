@@ -9,6 +9,7 @@ const postsRouter = Router();
 
 postsRouter.post(
     "/post",
+    validateToken,
     validateSchema(postSchema),
     validateHashtag,
     createPost
