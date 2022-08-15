@@ -1,39 +1,65 @@
+/* eslint-disable no-use-before-define */
+import hashtagRepository from "../repositories/hashtagRepositories.js";
 import postsRepository from "../repositories/postsRepositories.js";
 
+function getHashtagsIdsFromArrayOfQueries(arrayOfQueries) {
+    // Ta mandando um array de undefined
+    const hashtagsIds = [];
 
-export async function createPost(req, res){
+    arrayOfQueries.forEach((array) => {
+        const { rows: id } = array;
+
+        hashtagsIds.push(id[0].id);
+    });
+
+    return hashtagsIds;
+}
+
+export async function createPost(req, res) {
     const { url, text } = req.body;
     const userId = res.locals.user.id;
-    
-    try{
+
+    try {
+        // Preenchendo tabela post
         await postsRepository.createPost(userId, url, text);
 
-        if(text) {
-            const { hashtagsToRegister, hashtags } = res.locals;
+        // Preenchendo tabala post_hashtags e salvando as hashtags novas
+        if (text) {
+            const { arrayHashtagsToRegister, arrayHashtags } = res.locals;
 
-            if(hashtags) {
+            if (arrayHashtags) {
+                if (arrayHashtagsToRegister.length !== 0) {
+                    // Adicionando hashtags novas na tabela de hashtags
+                    await Promise.all(
+                        arrayHashtagsToRegister.forEach(async (hashtag) => {
+                            await hashtagRepository.createHashtag(hashtag);
+                        })
+                    );
+                }
 
-                if(hashtagsToRegister.length !== 0) {
-                    await Promise.all(hashtagsToRegister.forEach(async hashtag => {
-                        await postsRepository.createHashtag(hashtag);
-                    }));
-                };
+                const queriesResults = await Promise.all(
+                    arrayHashtags.map((hashtag) =>
+                        hashtagRepository.getHashtagIdByName(hashtag)
+                    )
+                );
+                // Array de ids das hashtags usadas
+                const hashtagIds =
+                    getHashtagsIdsFromArrayOfQueries(queriesResults);
 
-                const queriesResults = await Promise.all(hashtags.map(async hashtag => {
-                    await postsRepository.getHashtagIdByName(hashtag);
-                }));
-
-                const hashtagIds = getHashtagsIdsFromArrayOfQueries(queriesResults);
-
-                const { rows: postIdQuery } = await postsRepository.getUserLastPostId(userId);
-
+                // Pegando o id do post
+                const { rows: postIdQuery } =
+                    await postsRepository.getUserLastPostId(userId);
                 const postId = postIdQuery[0].id;
 
-                await Promise.all(hashtagIds.forEach(async hashtagId => {
-                    await postsRepository.createPostHashtags(postId, hashtagId);
-                }));
-            };
-        };
+                // Preenchendo tabela de post_hashtags
+                // ERRO AQUI <<<<<<<<<<<<<<<<
+                await Promise.all(
+                    hashtagIds.forEach((hashtagId) =>
+                        postsRepository.createPostHashtags(postId, hashtagId)
+                    )
+                );
+            }
+        }
 
         return res.sendStatus(201);
     } catch (error) {
@@ -42,25 +68,12 @@ export async function createPost(req, res){
     }
 }
 
-export async function timeline(req, res){
-
-    try{
-        const posts = await postsRepository.showPosts()
-        return res.send(posts.rows)
+export async function timeline(req, res) {
+    try {
+        const posts = await postsRepository.showPosts();
+        return res.send(posts.rows);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
     }
 }
-
-function getHashtagsIdsFromArrayOfQueries(array) {
-    const hashtagsIds = [];
-
-    array.forEach(array => {
-        const { rows: id } = array;
-
-        hashtagsIds.push(id[0].id);
-    });
-
-    return hashtagsIds;
-};
