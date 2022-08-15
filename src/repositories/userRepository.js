@@ -7,16 +7,15 @@ async function getTrendingHashtags() {
         join posts_hashtags p
         on h.id=p.hashtag_id
         group by h.id
-        config_database
         order by count(p.post_id) desc
         limit 10;
     `);
-}
+};
 
 async function getHashtagPosts(hashtag) {
     return connection.query(
         `
-        select p.id, p.message, p.url, count(pl.post_id) as "likesCount",
+        select p.id, p.text, p.url, count(pl.post_id) as "likesCount",
             array(
                 select jsonb_build_object('id', h.id, 'name', h.name)
                 from hashtags h 
@@ -44,11 +43,11 @@ async function getHashtagPosts(hashtag) {
     `,
         [hashtag]
     );
-}
+};
 
 async function getUserByEmail(email) {
     return connection.query(`SELECT * FROM users WHERE email = $1`, [email]);
-}
+};
 
 async function createUser(username, email, passwordHash, profile_img_url) {
     return connection.query(
@@ -56,11 +55,11 @@ async function createUser(username, email, passwordHash, profile_img_url) {
          VALUES ($1, $2, $3, $4)`,
         [username, email, passwordHash, profile_img_url]
     );
-}
+};
 
 async function getUserById(id) {
     return connection.query(`SELECT * FROM users WHERE id = $1;`, [id]);
-}
+};
 
 async function getUserInfo(userId) {
     return connection.query(`
@@ -72,7 +71,7 @@ async function getUserInfo(userId) {
 
 async function getUserPosts(userId) {
     return connection.query(`
-    select p.id, p.message, p.url, count(distinct pl.user_id) as "likesCount",
+    select p.id, p.text, p.url, count(distinct pl.user_id) as "likesCount",
         array(
             select jsonb_build_object('id', h.id, 'name', h.name)
             from hashtags h
@@ -98,7 +97,7 @@ async function getUserPosts(userId) {
     group by p.id
     order by p.id;
 `, [userId]);
-}
+};
 
 const userRepository = {
     getTrendingHashtags,
