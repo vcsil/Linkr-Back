@@ -4,7 +4,7 @@ async function getTrendingHashtags() {
     return connection.query(`
         select h.id, h.name as hashtag
         from hashtags h
-        join posts_hashtags p
+        join post_hashtags p
         on h.id=p.hashtag_id
         group by h.id
         order by count(p.post_id) desc
@@ -19,7 +19,7 @@ async function getHashtagPosts(hashtag) {
             array(
                 select jsonb_build_object('id', h.id, 'name', h.name)
                 from hashtags h 
-                join posts_hashtags ph
+                join post_hashtags ph
                 on ph.hashtag_id=h.id
                 where post_id=p.id
             ) as "hashtags",
@@ -28,7 +28,7 @@ async function getHashtagPosts(hashtag) {
                     jsonb_build_object('id', u.id, 'name', u.username)
                 ) filter (where u.id is not null), '[]'
             ) as "likedBy"
-        from posts_hashtags ph
+        from post_hashtags ph
         left join posts p
         on p.id=ph.post_id
         left join hashtags h
@@ -75,7 +75,7 @@ async function getUserPosts(userId) {
         array(
             select jsonb_build_object('id', h.id, 'name', h.name)
             from hashtags h
-            join posts_hashtags ph
+            join post_hashtags ph
             on ph.hashtag_id=h.id
             where post_id=p.id
             ) as "hashtags",
@@ -85,7 +85,7 @@ async function getUserPosts(userId) {
                 ) filter (where u.id is not null), '[]'
             ) as "likedBy"
     from posts p
-    left join posts_hashtags ph
+    left join post_hashtags ph
     on p.id=ph.post_id
     left join hashtags h
     on h.id=ph.hashtag_id
