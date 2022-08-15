@@ -35,14 +35,12 @@ export async function singIn(req, res) {
         if (user && bcrypt.compareSync(password, user.password)) {
             const token = uuid();
             await sessionRepository.createSession(user.id, token);
-            return res
-                .status(200)
-                .send({
-                    username: user.username,
-                    email,
-                    profile_img_url: user.profile_img_url,
-                    token,
-                });
+            return res.status(200).send({
+                username: user.username,
+                email,
+                profile_img_url: user.profile_img_url,
+                token,
+            });
         }
 
         return res.status(401).send("Senha ou email incorretos!");

@@ -39,5 +39,5 @@ export default async function validateHashtag(req, res, next) {
         }
     }
 
-    next();
+    return next();
 }
