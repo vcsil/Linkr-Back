@@ -18,9 +18,7 @@ async function createHashtag(hashtag) {
 }
 
 async function getHashtagIdByName(hashtag) {
-    return connection.query(`SELECT "id" FROM hashtags WHERE "name"=$1;`, [
-        hashtag,
-    ]);
+    return connection.query(`SELECT id FROM hashtags WHERE name=$1;`, [hashtag]);
 }
 
 const hashtagRepository = {

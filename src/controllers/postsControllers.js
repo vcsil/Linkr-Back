@@ -3,7 +3,6 @@ import hashtagRepository from "../repositories/hashtagRepositories.js";
 import postsRepository from "../repositories/postsRepositories.js";
 
 function getHashtagsIdsFromArrayOfQueries(arrayOfQueries) {
-    // Ta mandando um array de undefined
     const hashtagsIds = [];
 
     arrayOfQueries.forEach((array) => {
@@ -17,7 +16,7 @@ function getHashtagsIdsFromArrayOfQueries(arrayOfQueries) {
 
 export async function createPost(req, res) {
     const { url, text } = req.body;
-    const userId = res.locals.user.id;
+    const userId = 1;
 
     try {
         // Preenchendo tabela post
@@ -28,6 +27,7 @@ export async function createPost(req, res) {
             const { arrayHashtagsToRegister, arrayHashtags } = res.locals;
 
             if (arrayHashtags) {
+              
                 if (arrayHashtagsToRegister.length !== 0) {
                     // Adicionando hashtags novas na tabela de hashtags
                     await Promise.all(
@@ -36,32 +36,33 @@ export async function createPost(req, res) {
                         })
                     );
                 }
-
+     
                 const queriesResults = await Promise.all(
-                    arrayHashtags.map((hashtag) =>
-                        hashtagRepository.getHashtagIdByName(hashtag)
+                    arrayHashtags.map(async (hashtag) =>
+                       await hashtagRepository.getHashtagIdByName(hashtag)
                     )
                 );
+
+     
                 // Array de ids das hashtags usadas
                 const hashtagIds =
                     getHashtagsIdsFromArrayOfQueries(queriesResults);
-
+                
                 // Pegando o id do post
                 const { rows: postIdQuery } =
                     await postsRepository.getUserLastPostId(userId);
                 const postId = postIdQuery[0].id;
-
+                
                 // Preenchendo tabela de post_hashtags
-                // ERRO AQUI <<<<<<<<<<<<<<<<
                 await Promise.all(
-                    hashtagIds.forEach((hashtagId) =>
-                        postsRepository.createPostHashtags(postId, hashtagId)
+                    hashtagIds.map(async (hashtagId) =>
+                        await postsRepository.createPostHashtags(postId, hashtagId)
                     )
                 );
             }
         }
 
-        return res.sendStatus(201);
+        res.sendStatus(201);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);

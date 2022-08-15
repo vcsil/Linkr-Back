@@ -36,7 +36,6 @@ export default async function validateHashtag(req, res, next) {
 
             res.locals.arrayHashtagsToRegister = hashtagsToRegister;
             res.locals.arrayHashtags = hashtags;
-            next();
         }
     }
 
