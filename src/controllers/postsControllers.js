@@ -31,15 +31,15 @@ export async function createPost(req, res) {
                 if (arrayHashtagsToRegister.length !== 0) {
                     // Adicionando hashtags novas na tabela de hashtags
                     await Promise.all(
-                        arrayHashtagsToRegister.forEach(async (hashtag) => {
-                            await hashtagRepository.createHashtag(hashtag);
+                        arrayHashtagsToRegister.forEach((hashtag) => {
+                            hashtagRepository.createHashtag(hashtag);
                         })
                     );
                 }
      
                 const queriesResults = await Promise.all(
-                    arrayHashtags.map(async (hashtag) =>
-                       await hashtagRepository.getHashtagIdByName(hashtag)
+                    arrayHashtags.map((hashtag) =>
+                       hashtagRepository.getHashtagIdByName(hashtag)
                     )
                 );
 
@@ -55,8 +55,8 @@ export async function createPost(req, res) {
                 
                 // Preenchendo tabela de post_hashtags
                 await Promise.all(
-                    hashtagIds.map(async (hashtagId) =>
-                        await postsRepository.createPostHashtags(postId, hashtagId)
+                    hashtagIds.map((hashtagId) =>
+                        postsRepository.createPostHashtags(postId, hashtagId)
                     )
                 );
             }
