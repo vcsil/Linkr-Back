@@ -16,7 +16,7 @@ function getHashtagsIdsFromArrayOfQueries(arrayOfQueries) {
 
 export async function createPost(req, res) {
     const { url, text } = req.body;
-    const userId = 1;
+    const userId = res.locals.user.id;
 
     try {
         // Preenchendo tabela post
