@@ -52,9 +52,8 @@ export async function createPost(req, res) {
                 const postId = postIdQuery[0].id;
 
                 // Preenchendo tabela de post_hashtags
-                // ERRO AQUI <<<<<<<<<<<<<<<<
                 await Promise.all(
-                    hashtagIds.forEach((hashtagId) =>
+                    hashtagIds.map((hashtagId) =>
                         postsRepository.createPostHashtags(postId, hashtagId)
                     )
                 );
