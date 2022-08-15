@@ -8,28 +8,14 @@ export default async function validateHashtag(req, res, next) {
         const hashtags = extractHashtags(text);
 
         if(hashtags.length !== 0) {
-            const arrayEx = [];
 
-            await hashtags.forEach(async hashtag => {
-                const { rows: hashtagRegistered, rowCount: hashtagCount } = await getHashtags(hashtag);
+            const queriesResult = await Promise.all(hashtags.map(async hashtag => await getHashtags(hashtag)));
+            const hashtagsRegistered = getHashtagNamesFromArrayOfQueries(queriesResult);
+            const hashtagsToRegister = hashtags.filter(hashtag => !hashtagsRegistered.includes(hashtag));
 
-                if(hashtagCount !== 0) {
-                    arrayEx.push(hashtagRegistered[0].name);
-                    console.log(arrayEx);
-                }
-            });
-
-            res.locals.arrayEx = arrayEx;
+            res.locals.hashtagsToRegister = hashtagsToRegister;
+            res.locals.hashtags = hashtags;
             next();
-
-            // return res.send(arrayEx);
-            // const hashtagsToRegister = hashtags.filter(hashtag => !(hashtagsRegistered.includes(hashtag.toLowerCase())));
-            
-            
-
-            
-            // res.locals.hashtagsToRegister = hashtagsToRegister;
-            // next();
         };
     };
 
@@ -42,4 +28,18 @@ function getHashtags(hashtag) {
             from hashtags
             where name=$1;
         `, [hashtag.toLowerCase()]);
+};
+
+function getHashtagNamesFromArrayOfQueries(array) {
+    const hashtagNames = [];
+
+    array.forEach(array => {
+        const { rows: hashtag, rowCount: hashtagCount } = array;
+
+        if(hashtagCount !== 0) {
+            hashtagNames.push(hashtag[0].name);
+        };
+    });
+
+    return hashtagNames;
 };

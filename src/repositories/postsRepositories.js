@@ -23,6 +23,21 @@ async function createHashtag(hashtag) {
     `, [hashtag]);
 };
 
+async function getHashtagIdByName(hashtag) {
+    return connection.query(`
+        select id
+        from hashtags
+        where name=$1;
+    `, [hashtag]);
+};
+
+async function createPostHashtags(postId, hashtagId) {
+    connection.query(`
+        insert into post_hashtags (post_id, hashtag_id)
+        values ($1, $2);
+    `, [postId, hashtagId]);
+};
+
 async function showPosts() {
     return connection.query(
         `SELECT u.username,p.text,p.url,u."imgUrl" FROM posts p 
@@ -36,6 +51,8 @@ const postsRepository = {
     createPost,
     getUserLastPostId,
     createHashtag,
+    getHashtagIdByName,
+    createPostHashtags,
     showPosts,
 };
 
