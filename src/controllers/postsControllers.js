@@ -69,10 +69,10 @@ export async function createPost(req, res) {
     }
 }
 
-export async function timeline(req, res) {
+export async function timelinePosts(req, res) {
     try {
-        const posts = await postsRepository.showPosts();
-        return res.send(posts.rows);
+        const { rows: posts } = await postsRepository.getTimelinePosts();
+        return res.send(posts);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);

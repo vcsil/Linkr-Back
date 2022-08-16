@@ -28,20 +28,46 @@ async function createPostHashtags(postId, hashtagId) {
     );
 }
 
-async function showPosts() {
-    return connection.query(
-        `SELECT u.username,p.text,p.url,u."imgUrl" FROM posts p 
-        JOIN users u 
-        ON u.id = p.userid 
-        ORDER BY p."createdAt" desc LIMIT 20`
-    );
+async function getTimelinePosts() {
+    return connection.query(`
+        select p.id as "postId", p.text, p.url, count(distinct pl.user_id) as "likesCount",
+            array(
+                select jsonb_build_object('id', u.id, 'authorName', u.username, 'authorImgUrl', u.profile_img_url)
+                from users u
+                where p.user_id=u.id
+            ) as "authorInfo",
+            array(
+                select jsonb_build_object('id', h.id, 'name', h.name)
+                from hashtags h
+                join post_hashtags ph
+                on ph.hashtag_id=h.id
+                where post_id=p.id
+                ) as "hashtags",
+            coalesce(
+                jsonb_agg(
+                    distinct jsonb_build_object('id', u.id, 'name', u.username)
+                    ) filter (where u.id is not null), '[]'
+                ) as "likedBy"
+        from posts p
+        left join post_hashtags ph
+        on p.id=ph.post_id
+        left join hashtags h
+        on h.id=ph.hashtag_id
+        left join post_likes pl
+        on pl.post_id=p.id
+        left join users u
+        on u.id=pl.user_id
+        group by p.id
+        order by p.created_at desc
+        limit 20;
+    `);
 }
 
 const postsRepository = {
     createPost,
     getUserLastPostId,
     createPostHashtags,
-    showPosts,
+    getTimelinePosts
 };
 
 export default postsRepository;
