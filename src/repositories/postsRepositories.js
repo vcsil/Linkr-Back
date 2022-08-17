@@ -28,8 +28,8 @@ async function createPostHashtags(postId, hashtagId) {
     );
 }
 
-async function getTimelinePosts() {
-    return connection.query(`
+async function getTimelinePosts(limit, offset) {
+    const defaultQueryString = `
         select p.id as "postId", p.text, p.url, count(distinct pl.user_id) as "likesCount",
             array(
                 select jsonb_build_object('id', u.id, 'authorName', u.username, 'authorImgUrl', u.profile_img_url)
@@ -59,8 +59,35 @@ async function getTimelinePosts() {
         on u.id=pl.user_id
         group by p.id
         order by p.created_at desc
-        limit 20;
-    `);
+    `;
+
+    if(limit && offset) {
+        return connection.query(`
+            ${defaultQueryString}
+            limit $1
+            offset $2
+        `, [limit, offset]);
+    };
+
+    if(limit) {
+        return connection.query(`
+            ${defaultQueryString}
+            limit $1
+        `, [limit]);
+    };
+
+    if(offset) {
+        return connection.query(`
+            ${defaultQueryString}
+            offset $1
+        `, [offset]);
+    };
+
+    limit = 20;
+    return connection.query(`
+        ${defaultQueryString}
+        limit $1
+    `, [limit]);
 }
 
 async function updatePostText(text, postId) {

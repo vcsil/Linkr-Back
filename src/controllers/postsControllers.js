@@ -1,6 +1,7 @@
 /* eslint-disable no-use-before-define */
 import hashtagRepository from "../repositories/hashtagRepositories.js";
 import postsRepository from "../repositories/postsRepositories.js";
+import sanitizeString from "../utils/sanitizeStrings.js";
 
 function getHashtagsIdsFromArrayOfQueries(arrayOfQueries) {
     const hashtagsIds = [];
@@ -70,8 +71,29 @@ export async function createPost(req, res) {
 }
 
 export async function timelinePosts(req, res) {
+    let limit = req.query.limit;
+    let offset = req.query.offset;
+
+
+
     try {
-        const { rows: posts } = await postsRepository.getTimelinePosts();
+        if(limit) {
+            limit = sanitizeString(limit);
+
+            if(isNaN(limit)) {
+                return res.status(400).send("Limit is not in a valid format!");
+            };
+        };
+
+        if(offset) {
+            offset = sanitizeString(offset);
+
+            if(isNaN(offset)) {
+                return res.status(400).send("Offset is not in a valid format!");
+            };
+        };
+
+        const { rows: posts } = await postsRepository.getTimelinePosts(limit, offset);
         return res.send(posts);
     } catch (error) {
         console.log(error);
