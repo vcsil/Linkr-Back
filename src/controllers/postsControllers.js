@@ -78,3 +78,97 @@ export async function timelinePosts(req, res) {
         return res.sendStatus(500);
     }
 }
+
+export async function updatePost(req, res) {
+    const { postId } = req.params;
+    const newText = req.body.text.trim();
+    const { user, arrayHashtagsToRegister, arrayHashtags } = res.locals;
+
+    if(isNaN(postId)) {
+        return res.status(400).send("This is not a valid format for a post id!");
+    };
+
+    const { rows: postFound, rowCount: postCount } = await postsRepository.getPostById(postId);
+    const postToUpdate = postFound[0];
+
+    if(postCount === 0) {
+        return res.status(404).send("There is no post with this id!");
+    };
+
+    if(user.id !== postToUpdate.user_id) {
+        return res.sendStatus(401);
+    };
+
+    if(postToUpdate.text === newText) {
+        return res.status(200).send("Post wasn't updated because new text is equal to text from original post!");
+    };
+
+    try {
+        const { rows: queriePostHashtagIds } = await postsRepository.getPostHashtagIds(postId);
+        const postHashtagIds = queriePostHashtagIds.map(hashtagIdOject => hashtagIdOject.hashtagId);
+
+        if(arrayHashtags) {
+    
+            if (arrayHashtagsToRegister.length !== 0) {
+                await Promise.all(
+                    arrayHashtagsToRegister.map((hashtag) => {
+                        hashtagRepository.createHashtag(hashtag);
+                    })
+                );
+            }
+    
+            const queriesResults = await Promise.all(
+                arrayHashtags.map((hashtag) =>
+                   hashtagRepository.getHashtagIdByName(hashtag)
+                )
+            );
+    
+            const hashtagIds =
+                getHashtagsIdsFromArrayOfQueries(queriesResults);
+            
+    
+            if(postHashtagIds.length !== 0) {
+    
+                const originalPostHashtagIdsToDelete = postHashtagIds.filter(hashtagId => !hashtagIds.includes(hashtagId));
+                const newHashtagsIds = hashtagIds.filter(hashtagId => !postHashtagIds.includes(hashtagId));
+    
+                if(originalPostHashtagIdsToDelete.length !== 0) {
+                    await Promise.all(
+                        originalPostHashtagIdsToDelete.map(hashtagId => {
+                            hashtagRepository.deleteHashtagFromPostHashtagsTable(hashtagId, postId);
+                        })
+                    );
+                };
+                
+                if(newHashtagsIds.length !== 0) {
+                    await Promise.all(
+                        newHashtagsIds.map(hashtagId => {
+                            postsRepository.createPostHashtags(postId, hashtagId);
+                        })
+                    );
+                };
+                
+            } else {
+
+                await Promise.all(
+                    hashtagIds.map((hashtagId) =>
+                        postsRepository.createPostHashtags(postId, hashtagId)
+                    )
+                );
+            };
+        };
+
+        await Promise.all(
+            postHashtagIds.map((hashtagId) => {
+                hashtagRepository.deleteHashtagFromPostHashtagsTable(hashtagId, postId);
+            })
+        );
+    
+        await postsRepository.updatePostText(newText, postId);
+    
+        return res.status(200).send("The post was successfully updated!");
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
+    }
+};
