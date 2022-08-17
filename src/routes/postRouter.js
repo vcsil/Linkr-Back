@@ -7,14 +7,14 @@ import validateToken from "../middlewares/validateToken.js";
 
 const postsRouter = Router();
 
+postsRouter.use(validateToken);
 postsRouter.post(
     "/post",
-    validateToken,
     validateSchema(postSchema),
     validateHashtag,
     createPost
 );
 postsRouter.get("/timeline", timelinePosts);
-postsRouter.put("/post/:postId", validateToken, validateHashtag, updatePost);
+postsRouter.put("/post/:postId", validateHashtag, updatePost);
 
 export default postsRouter;

@@ -164,7 +164,7 @@ export async function updatePost(req, res) {
             })
         );
     
-        await postsRepository.updatePostText(newText, id);
+        await postsRepository.updatePostText(newText, postId);
     
         return res.status(200).send("The post was successfully updated!");
     } catch (error) {
