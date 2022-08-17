@@ -182,7 +182,7 @@ export async function deletePost(req, res) {
     };
 
     try {
-        const { rows: queriePostToDelete, rowCount: postCount } = await postsRepository.getPostHashtagIds(postId);
+        const { rows: queriePostToDelete, rowCount: postCount } = await postsRepository.getPostById(postId);
         const postToDelete = queriePostToDelete[0];
     
         if(postCount === 0) {
