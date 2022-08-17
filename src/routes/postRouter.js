@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createPost, timelinePosts } from "../controllers/postsControllers.js";
+import { createPost, timelinePosts, updatePost } from "../controllers/postsControllers.js";
 import validateSchema from "../middlewares/schemaValidator.js";
 import postSchema from "../schemas/postSchema.js";
 import validateHashtag from "../middlewares/validateHashtag.js";
@@ -15,5 +15,6 @@ postsRouter.post(
     createPost
 );
 postsRouter.get("/timeline", timelinePosts);
+postsRouter.put("/post/:postId", validateToken, validateHashtag, updatePost);
 
 export default postsRouter;

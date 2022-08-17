@@ -18,13 +18,35 @@ async function createHashtag(hashtag) {
 }
 
 async function getHashtagIdByName(hashtag) {
-    return connection.query(`SELECT id FROM hashtags WHERE name=$1;`, [hashtag]);
+    return connection.query(`
+        select id
+        from hashtags
+        where name=$1
+        order by id;
+    `, [hashtag]);
 }
+
+async function deleteHashtagById(hashtagId) {
+    connection.query(`
+        delete from hashtags
+        where id=$1;
+    `, [hashtagId]);
+};
+
+async function deleteHashtagFromPostHashtagsTable(hashtagId, postId) {
+    connection.query(`
+        delete from post_hashtags
+        where hashtag_id=$1
+        and post_id=$2;
+    `, [hashtagId, postId]);
+};
 
 const hashtagRepository = {
     getHashtags,
     createHashtag,
     getHashtagIdByName,
+    deleteHashtagById,
+    deleteHashtagFromPostHashtagsTable
 };
 
 export default hashtagRepository;

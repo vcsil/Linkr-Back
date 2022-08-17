@@ -63,11 +63,39 @@ async function getTimelinePosts() {
     `);
 }
 
+async function updatePostText(text, postId) {
+    connection.query(`
+        update posts
+        set text=$1
+        where id=$2;
+    `, [text, postId]);
+};
+
+async function getPostHashtagIds(postId) {
+    return connection.query(`
+        select hashtag_id as "hashtagId"
+        from post_hashtags
+        where post_id=$1
+        order by hashtag_id;
+    `, [postId]);
+};
+
+async function getPostById(postId) {
+    return connection.query(`
+        select *
+        from posts p
+        where p.id=$1;
+    `, [postId]);
+};
+
 const postsRepository = {
     createPost,
     getUserLastPostId,
     createPostHashtags,
-    getTimelinePosts
+    getTimelinePosts,
+    updatePostText,
+    getPostHashtagIds,
+    getPostById
 };
 
 export default postsRepository;
