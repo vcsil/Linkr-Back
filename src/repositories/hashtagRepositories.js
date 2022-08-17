@@ -26,13 +26,6 @@ async function getHashtagIdByName(hashtag) {
     `, [hashtag]);
 }
 
-async function deleteHashtagById(hashtagId) {
-    connection.query(`
-        delete from hashtags
-        where id=$1;
-    `, [hashtagId]);
-};
-
 async function deleteHashtagFromPostHashtagsTable(hashtagId, postId) {
     connection.query(`
         delete from post_hashtags
@@ -45,7 +38,6 @@ const hashtagRepository = {
     getHashtags,
     createHashtag,
     getHashtagIdByName,
-    deleteHashtagById,
     deleteHashtagFromPostHashtagsTable
 };
 
