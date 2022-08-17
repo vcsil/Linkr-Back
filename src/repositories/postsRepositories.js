@@ -88,6 +88,27 @@ async function getPostById(postId) {
     `, [postId]);
 };
 
+async function deletePostHashtagsRegisters(postId) {
+    connection.query(`
+        delete from post_hashtags
+        where post_id=$1;
+    `, [postId]);
+};
+
+async function deletePostLikesRegisters(postId) {
+    connection.query(`
+        delete from post_likes
+        where post_id=$1;
+    `, [postId]);
+};
+
+async function deletePostById(postId) {
+    connection.query(`
+        delete from posts
+        where id=$1;
+    `, [postId]);
+};
+
 const postsRepository = {
     createPost,
     getUserLastPostId,
@@ -95,7 +116,10 @@ const postsRepository = {
     getTimelinePosts,
     updatePostText,
     getPostHashtagIds,
-    getPostById
+    getPostById,
+    deletePostHashtagsRegisters,
+    deletePostLikesRegisters,
+    deletePostById
 };
 
 export default postsRepository;

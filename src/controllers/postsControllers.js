@@ -31,7 +31,7 @@ export async function createPost(req, res) {
                 if (arrayHashtagsToRegister.length !== 0) {
                     // Adicionando hashtags novas na tabela de hashtags
                     await Promise.all(
-                        arrayHashtagsToRegister.forEach((hashtag) => {
+                        arrayHashtagsToRegister.map((hashtag) => {
                             hashtagRepository.createHashtag(hashtag);
                         })
                     );
@@ -85,25 +85,25 @@ export async function updatePost(req, res) {
     const { user, arrayHashtagsToRegister, arrayHashtags } = res.locals;
 
     if(isNaN(postId)) {
-        return res.status(400).send("This is not a valid format for a post id!");
-    };
-
-    const { rows: postFound, rowCount: postCount } = await postsRepository.getPostById(postId);
-    const postToUpdate = postFound[0];
-
-    if(postCount === 0) {
-        return res.status(404).send("There is no post with this id!");
-    };
-
-    if(user.id !== postToUpdate.user_id) {
-        return res.sendStatus(401);
-    };
-
-    if(postToUpdate.text === newText) {
-        return res.status(200).send("Post wasn't updated because new text is equal to text from original post!");
+        return res.status(400).send("Please send a valid format for the post id!");
     };
 
     try {
+        const { rows: postFound, rowCount: postCount } = await postsRepository.getPostById(postId);
+        const postToUpdate = postFound[0];
+    
+        if(postCount === 0) {
+            return res.status(404).send("There is no post with this id!");
+        };
+    
+        if(user.id !== postToUpdate.user_id) {
+            return res.sendStatus(401);
+        };
+    
+        if(postToUpdate.text === newText) {
+            return res.status(200).send("Post wasn't updated because new text is equal to text from original post!");
+        };
+
         const { rows: queriePostHashtagIds } = await postsRepository.getPostHashtagIds(postId);
         const postHashtagIds = queriePostHashtagIds.map(hashtagIdOject => hashtagIdOject.hashtagId);
 
@@ -167,6 +167,37 @@ export async function updatePost(req, res) {
         await postsRepository.updatePostText(newText, postId);
     
         return res.status(200).send("The post was successfully updated!");
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
+    }
+};
+
+export async function deletePost(req, res) {
+    const { user } = res.locals;
+    const { postId } = req.params;
+
+    if(isNaN(postId)) {
+        return res.status(400).send("Please send a valid format for the post id!");
+    };
+
+    try {
+        const { rows: queriePostToDelete, rowCount: postCount } = await postsRepository.getPostById(postId);
+        const postToDelete = queriePostToDelete[0];
+    
+        if(postCount === 0) {
+            return res.status(404).send("There is no post with this id!");
+        };
+    
+        if(user.id !== postToDelete.user_id) {
+            return res.sendStatus(401);
+        };
+
+        await postsRepository.deletePostHashtagsRegisters(postId);
+        await postsRepository.deletePostLikesRegisters(postId);
+        await postsRepository.deletePostById(postId);
+
+        res.status(200).send("The post was deleted!");
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
