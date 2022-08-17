@@ -109,6 +109,13 @@ async function deletePostById(postId) {
     `, [postId]);
 };
 
+async function likePost(userId, postId) {
+    connection.query(`
+        insert into post_likes (user_id, post_id)
+        values ($1, $2);
+    `, [userId, postId]);
+};
+
 const postsRepository = {
     createPost,
     getUserLastPostId,
@@ -119,7 +126,8 @@ const postsRepository = {
     getPostById,
     deletePostHashtagsRegisters,
     deletePostLikesRegisters,
-    deletePostById
+    deletePostById,
+    likePost
 };
 
 export default postsRepository;

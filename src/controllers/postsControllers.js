@@ -203,3 +203,17 @@ export async function deletePost(req, res) {
         return res.sendStatus(500);
     }
 };
+
+export async function likePost(req, res) {
+    const { postId } = req.params;
+    const { user } = res.locals;
+    
+    try {
+        await postsRepository.likePost(user.id, postId);
+
+        res.status(200);
+    } catch (error) {
+        console.log(error);
+        return res.sendStatus(500);
+    }
+};
