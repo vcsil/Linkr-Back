@@ -7,8 +7,6 @@ import validateToken from "../middlewares/validateToken.js";
 
 const postsRouter = Router();
 
-
-postsRouter.delete("/post/:postId", deletePost);
 postsRouter.use(validateToken);
 postsRouter.post(
     "/post",
@@ -18,5 +16,6 @@ postsRouter.post(
 );
 postsRouter.get("/timeline", timelinePosts);
 postsRouter.put("/post/:postId", validateHashtag, updatePost);
+postsRouter.delete("/post/:postId", deletePost);
 
 export default postsRouter;

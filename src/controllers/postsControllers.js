@@ -31,7 +31,7 @@ export async function createPost(req, res) {
                 if (arrayHashtagsToRegister.length !== 0) {
                     // Adicionando hashtags novas na tabela de hashtags
                     await Promise.all(
-                        arrayHashtagsToRegister.forEach((hashtag) => {
+                        arrayHashtagsToRegister.map((hashtag) => {
                             hashtagRepository.createHashtag(hashtag);
                         })
                     );
