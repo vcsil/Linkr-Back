@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createPost, deletePost, timelinePosts, updatePost } from "../controllers/postsControllers.js";
+import { createPost, deletePost, likePost, timelinePosts, updatePost } from "../controllers/postsControllers.js";
 import validateSchema from "../middlewares/schemaValidator.js";
 import postSchema from "../schemas/postSchema.js";
 import validateHashtag from "../middlewares/validateHashtag.js";
@@ -17,5 +17,6 @@ postsRouter.post(
 postsRouter.get("/timeline", timelinePosts);
 postsRouter.put("/post/:postId", validateHashtag, updatePost);
 postsRouter.delete("/post/:postId", deletePost);
+postsRouter.post("/like/:postId", likePost);
 
 export default postsRouter;
