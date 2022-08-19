@@ -1,4 +1,8 @@
+/* eslint-disable no-plusplus */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-use-before-define */
+import urlMetadata from "url-metadata";
 import hashtagRepository from "../repositories/hashtagRepositories.js";
 import postsRepository from "../repositories/postsRepositories.js";
 
@@ -27,7 +31,7 @@ export async function createPost(req, res) {
             const { arrayHashtagsToRegister, arrayHashtags } = res.locals;
 
             if (arrayHashtags) {
-              
+
                 if (arrayHashtagsToRegister.length !== 0) {
                     // Adicionando hashtags novas na tabela de hashtags
                     await Promise.all(
@@ -36,23 +40,23 @@ export async function createPost(req, res) {
                         })
                     );
                 }
-     
+
                 const queriesResults = await Promise.all(
                     arrayHashtags.map((hashtag) =>
                        hashtagRepository.getHashtagIdByName(hashtag)
                     )
                 );
 
-     
+
                 // Array de ids das hashtags usadas
                 const hashtagIds =
                     getHashtagsIdsFromArrayOfQueries(queriesResults);
-                
+
                 // Pegando o id do post
                 const { rows: postIdQuery } =
                     await postsRepository.getUserLastPostId(userId);
                 const postId = postIdQuery[0].id;
-                
+
                 // Preenchendo tabela de post_hashtags
                 await Promise.all(
                     hashtagIds.map((hashtagId) =>
@@ -70,8 +74,22 @@ export async function createPost(req, res) {
 }
 
 export async function timelinePosts(req, res) {
+    let index = 0
     try {
         const { rows: posts } = await postsRepository.getTimelinePosts();
+
+        for (const { url } of posts) {
+            const metadata = await urlMetadata(url);
+            const objetoMetadates = {
+                url: metadata.canonical,
+                title: metadata.title,
+                image: metadata.image,
+                description: metadata.description,
+            };
+            posts[index].objMeta = objetoMetadates;
+            index++
+        }
+
         return res.send(posts);
     } catch (error) {
         console.log(error);
@@ -91,15 +109,15 @@ export async function updatePost(req, res) {
     try {
         const { rows: postFound, rowCount: postCount } = await postsRepository.getPostById(postId);
         const postToUpdate = postFound[0];
-    
+
         if(postCount === 0) {
             return res.status(404).send("There is no post with this id!");
         };
-    
+
         if(user.id !== postToUpdate.user_id) {
             return res.sendStatus(401);
         };
-    
+
         if(postToUpdate.text === newText) {
             return res.status(200).send("Post wasn't updated because new text is equal to text from original post!");
         };
@@ -108,7 +126,7 @@ export async function updatePost(req, res) {
         const postHashtagIds = queriePostHashtagIds.map(hashtagIdOject => hashtagIdOject.hashtagId);
 
         if(arrayHashtags) {
-    
+
             if (arrayHashtagsToRegister.length !== 0) {
                 await Promise.all(
                     arrayHashtagsToRegister.map((hashtag) => {
@@ -116,22 +134,22 @@ export async function updatePost(req, res) {
                     })
                 );
             }
-    
+
             const queriesResults = await Promise.all(
                 arrayHashtags.map((hashtag) =>
                    hashtagRepository.getHashtagIdByName(hashtag)
                 )
             );
-    
+
             const hashtagIds =
                 getHashtagsIdsFromArrayOfQueries(queriesResults);
-            
-    
+
+
             if(postHashtagIds.length !== 0) {
-    
+
                 const originalPostHashtagIdsToDelete = postHashtagIds.filter(hashtagId => !hashtagIds.includes(hashtagId));
                 const newHashtagsIds = hashtagIds.filter(hashtagId => !postHashtagIds.includes(hashtagId));
-    
+
                 if(originalPostHashtagIdsToDelete.length !== 0) {
                     await Promise.all(
                         originalPostHashtagIdsToDelete.map(hashtagId => {
@@ -139,7 +157,7 @@ export async function updatePost(req, res) {
                         })
                     );
                 };
-                
+
                 if(newHashtagsIds.length !== 0) {
                     await Promise.all(
                         newHashtagsIds.map(hashtagId => {
@@ -147,7 +165,7 @@ export async function updatePost(req, res) {
                         })
                     );
                 };
-                
+
             } else {
 
                 await Promise.all(
@@ -163,9 +181,9 @@ export async function updatePost(req, res) {
                 hashtagRepository.deleteHashtagFromPostHashtagsTable(hashtagId, postId);
             })
         );
-    
+
         await postsRepository.updatePostText(newText, postId);
-    
+
         return res.status(200).send("The post was successfully updated!");
     } catch (error) {
         console.log(error);
@@ -184,11 +202,11 @@ export async function deletePost(req, res) {
     try {
         const { rows: queriePostToDelete, rowCount: postCount } = await postsRepository.getPostById(postId);
         const postToDelete = queriePostToDelete[0];
-    
+
         if(postCount === 0) {
             return res.status(404).send("There is no post with this id!");
         };
-    
+
         if(user.id !== postToDelete.user_id) {
             return res.sendStatus(401);
         };

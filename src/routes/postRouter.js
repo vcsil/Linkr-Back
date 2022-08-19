@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { createPost, deletePost, timelinePosts, updatePost } from "../controllers/postsControllers.js";
+import {
+    createPost,
+    deletePost,
+    timelinePosts,
+    updatePost,
+} from "../controllers/postsControllers.js";
 import validateSchema from "../middlewares/schemaValidator.js";
 import postSchema from "../schemas/postSchema.js";
 import validateHashtag from "../middlewares/validateHashtag.js";
