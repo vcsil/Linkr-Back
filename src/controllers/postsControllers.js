@@ -2,10 +2,10 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-use-before-define */
-import urlMetadata from "url-metadata";
 import hashtagRepository from "../repositories/hashtagRepositories.js";
 import postsRepository from "../repositories/postsRepositories.js";
 import sanitizeString from "../utils/sanitizeStrings.js";
+import getUrlMetadata from "../utils/getUrlMetadata.js";
 
 function getHashtagsIdsFromArrayOfQueries(arrayOfQueries) {
     const hashtagsIds = [];
@@ -77,7 +77,6 @@ export async function createPost(req, res) {
 export async function timelinePosts(req, res) {
     let limit = req.query.limit;
     let offset = req.query.offset;
-    let index = 0;
 
     try {
         if(limit) {
@@ -98,19 +97,9 @@ export async function timelinePosts(req, res) {
 
         const { rows: posts } = await postsRepository.getTimelinePosts(limit, offset);
 
-        for (const { url } of posts) {
-            const metadata = await urlMetadata(url);
-            const objetoMetadates = {
-                url: metadata.canonical,
-                title: metadata.title,
-                image: metadata.image,
-                description: metadata.description,
-            };
-            posts[index].objMeta = objetoMetadates;
-            index++
-        }
+        const postsWithMetadata = await getUrlMetadata(posts);
 
-        return res.send(posts);
+        return res.send(postsWithMetadata);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
