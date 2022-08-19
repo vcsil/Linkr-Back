@@ -77,6 +77,7 @@ export async function createPost(req, res) {
 export async function timelinePosts(req, res) {
     let limit = req.query.limit;
     let offset = req.query.offset;
+    let index = 0;
 
     try {
         if(limit) {
