@@ -15,7 +15,7 @@ async function getTrendingHashtags() {
 async function getHashtagPosts(hashtag) {
     return connection.query(`
         select p.id, p.text, p.url, count(pl.post_id) as "likesCount",
-            array(
+            (
                 select jsonb_build_object('id', u.id, 'authorName', u.username, 'authorImgUrl', u.profile_img_url)
                 from users u
                 where p.user_id=u.id
@@ -76,7 +76,7 @@ async function getUserInfo(userId) {
 async function getUserPosts(userId) {
     return connection.query(`
     select p.id, p.text, p.url, count(distinct pl.user_id) as "likesCount",
-        array(
+        (
             select jsonb_build_object('id', u.id, 'authorName', u.username, 'authorImgUrl', u.profile_img_url)
             from users u
             where p.user_id=u.id

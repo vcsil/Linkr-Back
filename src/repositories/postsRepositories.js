@@ -31,7 +31,7 @@ async function createPostHashtags(postId, hashtagId) {
 async function getTimelinePosts(limit, offset) {
     const defaultQueryString = `
         select p.id as "postId", p.text, p.url, count(distinct pl.user_id) as "likesCount",
-            array(
+            (
                 select jsonb_build_object('id', u.id, 'authorName', u.username, 'authorImgUrl', u.profile_img_url)
                 from users u
                 where p.user_id=u.id
